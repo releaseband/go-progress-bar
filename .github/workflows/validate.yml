@@ -1,0 +1,13 @@
+name: Validate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  workflow:
+    uses: releaseband/cicd/.github/workflows/golang-validate.yml@main
+    secrets: inherit
+
+    with:
+      golangci-lint-version: v1.58.1
