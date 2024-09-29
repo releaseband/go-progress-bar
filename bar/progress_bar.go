@@ -2,8 +2,11 @@ package bar
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 type Progress struct {
@@ -65,19 +68,38 @@ func (pb *Progress) updateStats(now time.Time) {
 }
 
 func (pb *Progress) render() {
+	width := getTerminalWidth()
 	ratio := float64(pb.current) / float64(pb.total)
 	percent := int(ratio * 100)
 
-	barLength := int(ratio * float64(pb.barWidth))
-	bar := strings.Repeat("█", barLength) + strings.Repeat("░", pb.barWidth-barLength)
+	infoText := fmt.Sprintf(" %3d%% | %d/%d | %.2f it/s | %v elapsed | %v remaining",
+		percent, pb.current, pb.total, pb.speed,
+		pb.elapsedTime.Round(time.Second), pb.remainingTime.Round(time.Second))
 
-	fmt.Printf("\r[%s] %3d%% | %d/%d | %.2f it/s | %v elapsed | %v remaining",
-		bar, percent, pb.current, pb.total, pb.speed,
-		pb.elapsedTime.Round(time.Second), pb.remainingTime.Round(time.Second),
-	)
+	availableWidth := width - len(infoText) - 3 // 3 для "[" и "]" и пробела
+
+	if availableWidth < 10 {
+		availableWidth = 10 // Минимальная ширина прогресс-бара
+	}
+
+	barLength := int(ratio * float64(availableWidth))
+	bar := strings.Repeat("█", barLength) + strings.Repeat("░", availableWidth-barLength)
+
+	fmt.Printf("\r[%s]%s", bar, infoText)
 }
 
 func (pb *Progress) Finish() {
 	pb.Update(pb.total)
 	fmt.Println()
+}
+
+func getTerminalWidth() int {
+	const defaultWidth = 80
+
+	width, _, err := terminal.GetSize(int(os.Stdout.Fd()))
+	if err == nil {
+		return width
+	}
+
+	return defaultWidth
 }
