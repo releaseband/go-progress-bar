@@ -11,20 +11,20 @@ type Configs struct {
 
 func DefaultConfigs(total int) Configs {
 	const (
-		defaultMask = 1023
-		defaultRate = time.Millisecond * 200
+		defaultMask  = 1023
+		defaultRate  = time.Millisecond * 200
+		defaultWidth = 50
 	)
-	return NewConfigs(defaultMask, total, defaultRate)
+	return NewConfigs(defaultMask, defaultWidth, total, defaultRate)
 }
-
-// NewConfigs creates a new Configs instance.
 func NewConfigs(
-	updateMask, total int,
+	updateMask, barWidth, total int,
 	refreshRate time.Duration,
 ) Configs {
 	return Configs{
 		updateMask:  updateMask,
 		refreshRate: refreshRate,
+		barWidth:    barWidth,
 		total:       total,
 	}
 }
