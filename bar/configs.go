@@ -18,6 +18,7 @@ func DefaultConfigs(total int) Configs {
 	return NewConfigs(defaultMask, defaultWidth, total, defaultRate)
 }
 
+// NewConfigs creates a new Configs instance.
 func NewConfigs(
 	updateMask, barWidth, total int,
 	refreshRate time.Duration,
