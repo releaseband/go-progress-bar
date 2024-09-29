@@ -76,10 +76,10 @@ func (pb *Progress) render() {
 		percent, pb.current, pb.total, pb.speed,
 		pb.elapsedTime.Round(time.Second), pb.remainingTime.Round(time.Second))
 
-	availableWidth := width - len(infoText) - 3 // 3 for "[" and "]" and space
+	availableWidth := width - len(infoText) - 3 // 3 для "[" и "]" и пробела
 
 	if availableWidth < 10 {
-		availableWidth = 10 // Minimum width for progress bar
+		availableWidth = 10 // Минимальная ширина прогресс-бара
 	}
 
 	barLength := int(ratio * float64(availableWidth))
