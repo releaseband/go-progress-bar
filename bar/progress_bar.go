@@ -72,18 +72,18 @@ func (pb *Progress) render() {
 	ratio := float64(pb.current) / float64(pb.total)
 	percent := int(ratio * 100)
 
-	barLength := int(ratio * float64(pb.barWidth))
-	bar := strings.Repeat("█", barLength) + strings.Repeat("░", pb.barWidth-barLength)
-
 	infoText := fmt.Sprintf(" %3d%% | %d/%d | %.2f it/s | %v elapsed | %v remaining",
 		percent, pb.current, pb.total, pb.speed,
 		pb.elapsedTime.Round(time.Second), pb.remainingTime.Round(time.Second))
 
-	availableWidth := width - len(infoText) - 3 // 3 для "[" и "]" и пробела
+	availableWidth := width - len(infoText) - 3 // 3 for "[" and "]" and space
 
-	if availableWidth < pb.barWidth {
-		pb.barWidth = availableWidth // Адаптируем ширину прогресс-бара под доступное пространство
+	if availableWidth < 10 {
+		availableWidth = 10 // Minimum width for progress bar
 	}
+
+	barLength := int(ratio * float64(availableWidth))
+	bar := strings.Repeat("█", barLength) + strings.Repeat("░", availableWidth-barLength)
 
 	fmt.Printf("\r[%s]%s", bar, infoText)
 }
