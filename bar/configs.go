@@ -9,6 +9,7 @@ type Configs struct {
 	total       int
 }
 
+// DefaultConfigs returns a Configs instance with default values.
 func DefaultConfigs(total int) Configs {
 	const (
 		defaultMask  = 1023
