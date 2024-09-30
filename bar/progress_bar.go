@@ -2,8 +2,11 @@ package bar
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 type Progress struct {
@@ -12,6 +15,7 @@ type Progress struct {
 	current int
 	speed   float64
 }
+
 type progressInformation struct {
 	startTime     time.Time
 	lastUpdate    time.Time
@@ -35,6 +39,7 @@ func NewProgressBar(cfg Configs) *Progress {
 		speed:   0,
 	}
 }
+
 func (pb *Progress) Update(current int) {
 	pb.current = current
 	now := time.Now()
@@ -47,6 +52,7 @@ func (pb *Progress) Update(current int) {
 		}
 	}
 }
+
 func (pb *Progress) updateStats(now time.Time) {
 	pb.elapsedTime = now.Sub(pb.startTime)
 	pb.speed = float64(pb.current) / pb.elapsedTime.Seconds()
@@ -55,18 +61,42 @@ func (pb *Progress) updateStats(now time.Time) {
 		pb.remainingTime = time.Duration(float64(remainingCount) / pb.speed * float64(time.Second))
 	}
 }
+
 func (pb *Progress) render() {
+	width := getTerminalWidth()
 	ratio := float64(pb.current) / float64(pb.total)
 	percent := int(ratio * 100)
-	barLength := int(ratio * float64(pb.barWidth))
-	bar := strings.Repeat("█", barLength) + strings.Repeat("░", pb.barWidth-barLength)
-	fmt.Printf("\r[%s] %3d%% | %d/%d | %.2f it/s | %v elapsed | %v remaining",
-		bar, percent, pb.current, pb.total, pb.speed,
-		pb.elapsedTime.Round(time.Second), pb.remainingTime.Round(time.Second),
-	)
+
+	infoText := fmt.Sprintf("| %3d%% | %d/%d | %.2f it/s | %v remaining",
+		percent, pb.current, pb.total, pb.speed, pb.remainingTime.Round(time.Second))
+
+	if pb.showProgressBar {
+		availableWidth := width - len(infoText) - 3 // 3 для "[" и "]" и пробела
+		if availableWidth < 10 {
+			availableWidth = 10 // Минимальная ширина прогресс-бара
+		}
+
+		barLength := int(ratio * float64(availableWidth))
+		bar := strings.Repeat("█", barLength) + strings.Repeat("░", availableWidth-barLength)
+
+		fmt.Printf("\r[%s]%s", bar, infoText)
+	} else {
+		fmt.Printf("\r%s", infoText)
+	}
 }
 
 func (pb *Progress) Finish() {
 	pb.Update(pb.total)
 	fmt.Println()
+}
+
+func getTerminalWidth() int {
+	const defaultWidth = 50
+
+	width, _, err := terminal.GetSize(int(os.Stdout.Fd()))
+	if err == nil {
+		return width
+	}
+
+	return defaultWidth
 }
